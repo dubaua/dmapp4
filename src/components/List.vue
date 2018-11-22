@@ -17,15 +17,29 @@ export default {
       config: {
         key: "posts",
         limit: 3,
+        // eslint-disable-next-line no-unused-vars
         filter(item) {
           return true;
         },
+        // eslint-disable-next-line no-unused-vars
         cellClassName(index) {
-          return index;
-        }
+          return "col-xs-4";
+        },
+        rowClassName: "row"
       },
       child: Card
     };
   }
 };
 </script>
+
+<style lang="scss">
+.row {
+  display: flex;
+  flex-wrap: wrap;
+}
+.col-xs-4 {
+  flex-basis: calc(33.33% - 2em);
+  margin: 1em 1em;
+}
+</style>
