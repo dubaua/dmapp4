@@ -2,11 +2,11 @@
   div
     div(:class="config.rowClassName")
       div(
-        v-for="(item, index) in filteredItems"
+        v-for="(item, index) in filteredEntries"
         :class="config.cellClassName(index)"
         :key="item.Id")
         component(:is="child" :content="item" :isReady="isReady")
-    button(@click="showMore" :disabled="isFetching") Загрузить еще
+    button(v-if="haveEntriesToLoad" @click="showMore" :disabled="isFetching") Загрузить еще
 </template>
 <script>
 import api from "@/api";
@@ -25,44 +25,49 @@ export default {
   },
   data() {
     return {
-      items: [],
+      entries: [],
       isFetching: false,
       isReady: false,
-      noMoreItems: false
+      total: 0
     };
   },
   computed: {
-    filteredItems() {
+    filteredEntries() {
       if (typeof this.config.filter === "undefined") {
-        return this.items;
+        return this.entries;
       }
-      return this.items.filter(this.config.filter);
+      return this.entries.filter(this.config.filter);
     },
-    existingIds() {
-      return this.items.map(item => item.Id);
-    }
+    haveEntriesToLoad() {
+      return this.entries.length < this.total;
+    },
   },
   mounted() {
     this.showMore();
   },
   methods: {
     async showMore() {
-      const items = await this.fetchItems();
-      if (items) {
-        this.items = [...this.items, ...items];
+      const { entries, total } = await this.fetchItems();
+      if (total) {
+        this.total = total;
+      }
+      if (entries) {
+        this.entries = [...this.entries, ...entries];
       }
     },
     async fetchItems() {
       this.isFetching = true;
+
       const { limit } = this.config;
-      const skip = this.items.length;
+      const skip = this.entries.length;
       const response = await api.getCollectionByKey(this.config.key, {
         limit,
         skip
       });
+
       this.isFetching = false;
       return response;
-    },
+    }
   }
 };
 </script>
