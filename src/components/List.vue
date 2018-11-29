@@ -16,7 +16,7 @@ export default {
     return {
       config: {
         key: "posts",
-        limit: 3,
+        limit: 12,
         // eslint-disable-next-line no-unused-vars
         filter(item) {
           return true;
@@ -37,6 +37,8 @@ export default {
 .row {
   display: flex;
   flex-wrap: wrap;
+  max-width: 1024px;
+  margin: auto;
 }
 .col-xs-4 {
   flex-basis: calc(33.33% - 2em);

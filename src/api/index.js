@@ -2,7 +2,7 @@ const getCollectionByKey = async (key, settings) => {
   // const url = `/cockpit/api/collections/get/${key}?token=${ process.env.VUE_APP_COCKPIT_KEY }`;
   const url = `/cockpit/api/collections/get/${key}?token=1eb7075408b1a27b01cf4fbeadfc37`;
 
-  // rework code down
+  // rework code below
   let _settings;
   if (settings) {
     const { limit, skip } = settings;
