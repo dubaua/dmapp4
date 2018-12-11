@@ -74,7 +74,7 @@ export default {
       return String(roll) === this.ranges[this.currentResult];
     },
     generate() {
-      this.currentResult = rollExpression(this.rule).result;
+      this.currentResult = rollExpression(this.rule);
     }
   }
 };
