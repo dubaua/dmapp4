@@ -17,7 +17,7 @@
 // @ is an alias to /src
 // import Card from "@/components/Card";
 import api from "@/api";
-import rollExpression from "@/utils/rollExpression";
+import { rollExpression } from "@/utils/rollExpression";
 import { castToNumber } from "@/utils";
 
 export default {
@@ -30,7 +30,7 @@ export default {
       table: [],
       rule: "",
       currentResult: 0,
-      linkedTables: [],
+      linkedTables: []
     };
   },
   computed: {
