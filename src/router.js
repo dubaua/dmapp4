@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Router from "vue-router";
 import List from "@/components/List.vue";
+import ChanceTest from "@/components/ChanceTest.vue";
 import RandomGenerator from "@/components/RandomGenerator.vue";
 import RandomGeneratorTableConverter from "@/components/RandomGeneratorTableConverter.vue";
 
@@ -28,6 +29,11 @@ export default new Router({
       path: "/generate/converter",
       name: "gemerator converter",
       component: RandomGeneratorTableConverter
+    },
+    {
+      path: "/chance-test",
+      name: "Chance Test converter",
+      component: ChanceTest
     },
     {
       path: "/generate/:generatorId",
