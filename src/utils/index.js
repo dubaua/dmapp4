@@ -7,30 +7,22 @@ export const flatten = (accumulator, current) =>
     ? accumulator.concat(current.reduce(flatten, []))
     : accumulator.concat(current);
 
-export const rollDice = ({ count, side, sign }) =>
-  times(() => rollDie(side), count).map(result => result * sign);
+export const rollDie = side => Math.floor(Math.random() * side) + 1;
 
-export const minDice = ({ count, side, sign }) =>
-  sign === -1 ? count * side * sign : count * sign;
-
-export const maxDice = ({ count, side, sign }) =>
-  sign === -1 ? count * sign : count * side * sign;
-
-export const times = (fn, count) => {
-  var willReturn = [];
-  let step = 0;
-  while (step < count) {
-    willReturn[step] = fn();
-    step++;
+export function rollDice({ count, side, sign }) {
+  let results = [];
+  for (let i = 0; i < count; i++) {
+    results.push(rollDie(side) * sign);
   }
-  return willReturn;
-};
+  return results;
+}
 
-export const rollDie = side => Math.floor(random() * side) + 1;
+export function minDice({ count, side, sign }) {
+  const _side = sign === -1 ? side : 1;
+  return count * sign * _side;
+}
 
-export const random = () => {
-  const _crypto = window.crypto || window.msCrypto;
-  let array = new Uint32Array(1);
-  _crypto.getRandomValues(array);
-  return array[0] * Math.pow(2, -32);
-};
+export function maxDice({ count, side, sign }) {
+  const _side = sign === -1 ? 1 : side;
+  return count * sign * _side;
+}

@@ -1,41 +1,32 @@
 <template lang="pug">
   .chance-test
-    .params
+    form.params(@submit.prevent="test")
       .params__col
-        label(for='expression') Die expression
-        input#expression(v-model='expression')
+        label(for="expression") Diсe expression
+        input#expression(v-model="expression")
       .params__col
-        label(for='count') Count of rolls
-        input#count(v-model='count')
+        label(for="count") Count of rolls
+        input#count(v-model="count")
       .params__col
-        | Zoom: {{zoom}}
-        input(type='range', v-model.number='zoom', min='1', max='10', step='1')
+        label(for="zoom") Zoom: {{zoom}}
+        input#zoom(type="range", v-model.number="zoom", min="1", max="10", step="1")
       .params__col
-        button(@click='test') Test
+        button(@click='test' type="submit") Test
+        button(@click='clear' type="reset") Clear
     .diagram
-      .diagram__ruler.diagram__ruler--0
-        .diagram__legend {{(0 / zoom).toFixed(2)}}%
+      .diagram__ruler(v-for="ruler in rulers" :class="'diagram__ruler--'+ruler")
+        .diagram__legend {{Math.round(ruler / zoom)}}%
         .diagram__bar
-      .diagram__ruler.diagram__ruler--20
-        .diagram__legend {{(20 / zoom).toFixed(2)}}%
-        .diagram__bar
-      .diagram__ruler.diagram__ruler--40
-        .diagram__legend {{(40 / zoom).toFixed(2)}}%
-        .diagram__bar
-      .diagram__ruler.diagram__ruler--60
-        .diagram__legend {{(60 / zoom).toFixed(2)}}%
-        .diagram__bar
-      .diagram__ruler.diagram__ruler--80
-        .diagram__legend {{(80 / zoom).toFixed(2)}}%
-        .diagram__bar
-      .diagram__ruler.diagram__ruler--100
-        .diagram__legend {{(100 / zoom).toFixed(2)}}%
-        .diagram__bar
-      .diagram__col(v-for='entry in results')
-        .diagram__progress(:style='getHeight(entry.count)')
+      .diagram__col(
+        v-if="!inProcess"
+        v-for='entry in results'
+        )
         .diagram__digit
           | {{entry.result}}
-        .diagram__highlight
+        .diagram__progress(:style='getHeight(entry.count)')
+          .diagram__highlight
+            span {{entry.count}}
+            span {{(entry.count / rolled * 100).toFixed(2)}}%
 </template>
 
 <script>
@@ -50,40 +41,47 @@ export default {
   name: "ChanceTest",
   data() {
     return {
-      expression: "d8+d12",
+      expression: "d9+d12-1",
       config: [],
       count: 10000,
       zoom: 10,
       rolled: 0,
-      results: {}
+      results: {},
+      rulers: [0, 20, 40, 60, 80, 100],
+      inProcess: false
     };
   },
   methods: {
     getHeight: function(count) {
-      return `height: ${((count / this.rolled) * 100 * this.zoom).toFixed(2)}%`;
+      const height = ((count / this.rolled) * this.zoom * 100).toFixed(2);
+      return `height: ${height}%`;
     },
     test() {
       this.clear();
+
+      // fill new results
       for (let i = 0; i < this.count; i++) {
         var result = rollDiceConfig(this.config);
         this.results[`r${result}`].count++;
         this.rolled++;
       }
+      this.inProcess = false;
 
+      // adjust zoom if results doen't fit
       const results = Object.values(this.results).map(entry => entry.count);
       const max = Math.max(...results);
-      console.log(max);
-
-      const zoomToFit = Math.ceil((max / this.count) * 10);
-      console.log("currentZoom", this.zoom, zoomToFit);
-      // if (this.zoom > zoomToFit) {
-      //   this.zoom = zoomToFit;
-      // }
+      const maxChance = (max / this.rolled) * 100;
+      const zoomToFit = Math.floor(100 / maxChance);
+      if (this.zoom > zoomToFit) {
+        this.zoom = zoomToFit;
+      }
     },
     clear() {
       this.config = parseExpression(this.expression);
       const min = minDiceConfig(this.config);
       const max = maxDiceConfig(this.config);
+
+      this.inProcess = true;
 
       this.rolled = 0;
       this.results = {};
@@ -107,28 +105,37 @@ export default {
 <style lang="scss">
 body {
   margin: 0;
+  font-family: "PT Root UI Web", "Helvetica Neue", "Segoe UI", sans-serif;
 }
+
+$bar-label-width: 40px;
+
 .params {
-  margin-left: 4rem;
+  margin-left: $bar-label-width;
   display: flex;
   align-items: flex-end;
   &__col {
     width: 20%;
     padding: 0 5px;
+    label {
+      display: block;
+    }
   }
   position: relative;
   z-index: 1;
 }
 
 .diagram {
+  $block: &;
   display: flex;
-  margin-left: 4rem;
+  margin-left: $bar-label-width;
+  margin-right: $bar-label-width / 2;
   height: 80vh;
   position: relative;
 
   &__ruler {
     position: absolute;
-    left: 0;
+    left: -$bar-label-width;
     right: 0;
     z-index: 1;
   }
@@ -141,10 +148,14 @@ body {
 
   &__legend {
     position: absolute;
-    left: -4rem;
-    width: 4rem;
+    width: $bar-label-width;
+    left: 0;
+    bottom: 100%;
+    padding-right: 0.2em;
+    box-sizing: border-box;
+    font-size: 12px;
+    line-height: 1.5;
     text-align: right;
-    transform: translate(0, -50%);
   }
 
   &__bar {
@@ -156,17 +167,44 @@ body {
     flex-grow: 1;
     background: rgba(0, 0, 0, 0.05);
     position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
 
     & + & {
       margin-left: 1px;
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.08);
+
+      #{$block}__highlight {
+        display: block;
+      }
     }
   }
 
   &__progress {
     width: 100%;
-    position: absolute;
-    bottom: 0;
     background: rgb(0, 126, 6);
+    position: relative;
+  }
+
+  &__highlight {
+    display: none;
+    bottom: 100%;
+    background: white;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    left: -$bar-label-width / 2;
+    right: -$bar-label-width / 2;
+    z-index: 1;
+    pointer-events: none;
+    text-align: center;
+    font-size: 12px;
+    span {
+      display: block;
+    }
   }
 
   &__digit {
