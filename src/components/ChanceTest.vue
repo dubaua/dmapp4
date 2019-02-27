@@ -11,14 +11,13 @@
         label(for="zoom") Zoom: {{zoom}}
         input#zoom(type="range", v-model.number="zoom", min="1", max="10", step="1")
       .params__col
-        button(@click='test' type="submit") Test
+        button(type="submit") Test
         button(@click='clear' type="reset") Clear
     .diagram
       .diagram__ruler(v-for="ruler in rulers" :class="'diagram__ruler--'+ruler")
         .diagram__legend {{Math.round(ruler / zoom)}}%
         .diagram__bar
       .diagram__col(
-        v-if="!inProcess"
         v-for='entry in results'
         )
         .diagram__digit
@@ -30,25 +29,19 @@
 </template>
 
 <script>
-import {
-  parseExpression,
-  rollDiceConfig,
-  minDiceConfig,
-  maxDiceConfig
-} from "@/utils/rollExpression";
+import { parse, rollDice, minDice, maxDice } from "@/utils/rollExpression";
 
 export default {
   name: "ChanceTest",
   data() {
     return {
-      expression: "d9+d12-1",
-      config: [],
+      expression: "3d6+6d6+12",
+      dice: [],
       count: 10000,
       zoom: 10,
       rolled: 0,
       results: {},
-      rulers: [0, 20, 40, 60, 80, 100],
-      inProcess: false
+      rulers: [0, 20, 40, 60, 80, 100]
     };
   },
   methods: {
@@ -61,11 +54,10 @@ export default {
 
       // fill new results
       for (let i = 0; i < this.count; i++) {
-        var result = rollDiceConfig(this.config);
+        var result = rollDice(this.dice);
         this.results[`r${result}`].count++;
         this.rolled++;
       }
-      this.inProcess = false;
 
       // adjust zoom if results doen't fit
       const results = Object.values(this.results).map(entry => entry.count);
@@ -77,11 +69,9 @@ export default {
       }
     },
     clear() {
-      this.config = parseExpression(this.expression);
-      const min = minDiceConfig(this.config);
-      const max = maxDiceConfig(this.config);
-
-      this.inProcess = true;
+      this.dice = parse(this.expression);
+      const min = minDice(this.dice);
+      const max = maxDice(this.dice);
 
       this.rolled = 0;
       this.results = {};

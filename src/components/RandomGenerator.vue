@@ -17,7 +17,7 @@
 // @ is an alias to /src
 // import Card from "@/components/Card";
 import api from "@/api";
-import { rollExpression } from "@/utils/rollExpression";
+import { roll } from "@/utils/rollExpression";
 import { castToNumber } from "@/utils";
 
 export default {
@@ -62,7 +62,7 @@ export default {
     next();
   },
   methods: {
-    rollExpression,
+    roll,
     async actualizeTable(key) {
       this.currentResult = 0;
       const response = await api.getCollectionByKey(key);
@@ -74,7 +74,7 @@ export default {
       return String(roll) === this.ranges[this.currentResult];
     },
     generate() {
-      this.currentResult = rollExpression(this.rule);
+      this.currentResult = roll(this.rule);
     }
   }
 };
